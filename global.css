@@ -1,0 +1,35 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+ 
+@import "nativewind/theme";
+
+
+
+@theme {
+  /* Core brand (purple–pink spectrum) */
+  --color-primary: #a855f7;  
+  --color-secondary: pink;            /* soft vibrant pink */
+  --color-primary-foreground: #ffffff;
+
+  --color-accent: #f472b6;               /* pink accent */
+  --color-accent-foreground: #ffffff;
+
+  /* UI structure */
+  --color-background: #fdf2f8;           /* almost white pink */
+  --color-foreground: #2a1f3d;           /* deep muted purple text */
+
+  --color-border: #e9d5ff;               /* light purple border */
+  --color-input: #f3e8ff;
+
+  /* Status colors */
+  --color-success: #22c55e;              /* green */
+  --color-success-foreground: #ffffff;
+
+  --color-destructive: #ef4444;          /* red */
+  --color-destructive-foreground: #ffffff;
+
+  /* Optional supporting tones */
+  --color-muted: #f5e9ff;
+  --color-muted-foreground: #6b5c7a;
+}
