@@ -37,7 +37,7 @@ const insets = useSafeAreaInsets()
           marginBlock: 12,
           paddingHorizontal:0,
           paddingTop: 0,
-          borderRadius:15,
+          borderRadius:35,
           borderTopWidth: 0,
           backgroundColor: Colors[colorScheme ?? 'light'].primary,
         },
