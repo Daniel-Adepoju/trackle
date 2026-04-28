@@ -3,7 +3,7 @@ import React from 'react'
 
 const ListHeading = ({title}: {title: string}) => {
   return (
-    <View className='self-center w-[90%] relative mb-2 mt-4'>
+    <View className='self-center w-full relative ml-6 mb-2 mt-4'>
       <Text className='text-sm font-medium'>{title}</Text>
       <TouchableOpacity className='absolute right-5 top-0'>
         <Text className='text-sm rounded-xl border-2 border-black/20 py-1 px-6'>View All</Text>

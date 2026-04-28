@@ -1,26 +1,23 @@
 import "@/global.css"
 
-import { Link } from "expo-router"
-import { Text, TouchableOpacity, View } from "react-native"
-import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context"
-import { Image } from "react-native"
-import avatar from "@/assets/images/avatar.png"
-import { styled } from "nativewind"
-import { IconSymbol } from "@/components/ui/icon-symbol"
-import { formatCurrency } from "@/lib/utils"
-import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data"
-import dayjs from "dayjs"
 import ListHeading from "@/components/ListHeading"
-import UpcomingSubCard from "@/components/UpcomingSubCard"
-import { FlatList } from "react-native"
-import { ScrollView } from "react-native"
 import SubCard from "@/components/SubCard"
+import { IconSymbol } from "@/components/ui/icon-symbol"
+import UpcomingSubCard from "@/components/UpcomingSubCard"
+import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data"
+import { formatCurrency } from "@/lib/utils"
+import { useUser } from "@clerk/expo"
+import dayjs from "dayjs"
+import { styled } from "nativewind"
 import { useState } from "react"
+import { FlatList, Image, Text, TouchableOpacity, View } from "react-native"
+import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context"
 
 const SafeAreaView = styled(RNSafeAreaView)
 
 export default function App() {
   const [expandedId, setExpandedId] = useState<string | null>("")
+  const { user } = useUser()
 
   return (
     <SafeAreaView className="flex-1 items-center bg-background p-5">
@@ -34,12 +31,22 @@ export default function App() {
           <>
             {/* Header */}
             <View className="self-center w-[90%] h-24 mt-4 flex-row items-center gap-4  mb-2">
-              <Image
-                source={avatar}
-                style={{ width: 60, height: 60 }}
-                className="rounded-full"
-              />
-              <Text className="text-xl font-sans-bold">Daniel </Text>
+              {user?.imageUrl ? (
+                <Image
+                  source={{ uri: user.imageUrl }}
+                  style={{ width: 60, height: 60 }}
+                  className="rounded-full"
+                />
+              ) : (
+                <Image
+                  source={require("@/assets/images/avatar.png")}
+                  style={{ width: 60, height: 60 }}
+                  className="rounded-full"
+                />
+              )}
+              <Text className="text-xl font-sans-bold">
+                {user?.firstName || user?.username || "User"}
+              </Text>
 
               <TouchableOpacity className="flex-row items-center gap-2 ml-auto rounded-full border-2 border-black/20 p-1">
                 <IconSymbol

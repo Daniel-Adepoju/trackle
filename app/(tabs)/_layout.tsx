@@ -1,13 +1,12 @@
+import { useAuthGuard } from "@/hooks/use-auth"
 import { Tabs } from "expo-router"
 import React from "react"
+import { ActivityIndicator, View } from "react-native"
 
-import { HapticTab } from "@/components/haptic-tab"
 import { IconSymbol } from "@/components/ui/icon-symbol"
 import { Colors } from "@/constants/theme"
 import { useColorScheme } from "@/hooks/use-color-scheme"
-import { processInsetBlock } from "react-native-reanimated/lib/typescript/css/native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { View } from "react-native"
 
 const tabs = [
   { name: "index", title: "Home", iconName: "house.fill" },
@@ -19,6 +18,25 @@ const tabs = [
 export default function TabLayout() {
   const colorScheme = useColorScheme()
   const insets = useSafeAreaInsets()
+  const { isLoaded, hasChecked } = useAuthGuard()
+
+  if (!isLoaded || !hasChecked) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fdf2f8",
+        }}
+      >
+        <ActivityIndicator
+          size="large"
+          color="#a855f7"
+        />
+      </View>
+    )
+  }
   return (
     <Tabs
       screenOptions={{
@@ -77,7 +95,7 @@ export default function TabLayout() {
                     size={24}
                     name={tab.iconName}
                     color={color}
-                    style={{ margin:"auto" }}
+                    style={{ margin: "auto" }}
                   />
                 </View>
               ),

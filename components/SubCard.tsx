@@ -15,14 +15,14 @@ const SubCard = ({
     <Pressable
       onPress={onPress}
       className={clsx(
-        "bg-purple-200 w-[90%] self-center flex-row items-center justify-between gap-2 rounded-xl p-4 py-16 h-36 border mt-3",
+        "bg-purple-200 w-[94%] self-center flex-row items-center justify-between gap-2 rounded-xl p-4 py-16 h-46 border mt-3",
         {
           "bg-purple-300": expanded,
         },
       )}
       style={!expanded && data?.color ? { backgroundColor: data?.color } : {}}
     >
-      <View className="w-[70%]">
+      <View className="w-[60%]">
         {/* image */}
         <View className="w-full px-4 flex-row items-center justify-center gap-2">
           <View>
@@ -60,9 +60,9 @@ const SubCard = ({
         )}
       </View>
       {/* price */}
-      <View className="items-center gap-1 font-bold w-[20%]">
+      <View className="items-end pr-4 gap-1 font-bold w-[40%]">
         <Text className="text-xl font-sans-bold">{formatCurrency(data?.price || 0)}</Text>
-        <Text>{data?.billing}</Text>
+        <Text className="w-full text-right ml-auto align-end" numberOfLines={1}>{data?.billing}</Text>
       </View>
     </Pressable>
   )
