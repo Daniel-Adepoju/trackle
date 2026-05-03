@@ -1,6 +1,7 @@
 import { useSignUp, useAuth } from "@clerk/expo";
 import { Link, useRouter, type Href } from "expo-router";
 import { useState } from "react";
+import { usePostHog } from "posthog-react-native";
 import {
   ActivityIndicator,
   Text,
@@ -20,23 +21,31 @@ export default function SignUpScreen() {
   const { signUp, fetchStatus } = useSignUp();
   const { isSignedIn } = useAuth();
   const router = useRouter();
+  const posthog = usePostHog();
 
   const [email, setEmail] = useState("");
+  const [username,setusername] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
   const handleSignUp = async () => {
     setError("");
+    posthog.capture("sign_up_attempted", { email, username });
 
     const { error } = await signUp.password({
+      username,
       emailAddress: email,
       password,
     });
 
-    if (error) return setError(error.message);
+    if (error) {
+      posthog.capture("sign_up_failed", { email, username, error_message: error.message });
+      return setError(error.message);
+    }
 
     await signUp.verifications.sendEmailCode();
+    posthog.capture("sign_up_email_verification_sent", { email });
   };
 
   const handleVerify = async () => {
@@ -45,6 +54,8 @@ export default function SignUpScreen() {
     await signUp.verifications.verifyEmailCode({ code });
 
     if (signUp.status === "complete") {
+      posthog.identify(email, { $set: { email, username }, $set_once: { sign_up_date: new Date().toISOString() } });
+      posthog.capture("sign_up_email_verified", { email, username });
       await signUp.finalize({
         navigate: () => {
           router.replace("/(tabs)" as Href);
@@ -59,7 +70,8 @@ export default function SignUpScreen() {
 
   // VERIFY SCREEN
   if (
-    signUp.status === "missing_requirements" &&
+    signUp.status === "missing_requirements"  
+    && 
     signUp.unverifiedFields.includes("email_address")
   ) {
     return (
@@ -69,7 +81,7 @@ export default function SignUpScreen() {
           className="flex-1"
         >
           <ScrollView 
-          className="my-34 font-sans-regular"
+          className="mt-34 font-sans-regular"
           contentContainerStyle={{ padding: 24 }}>
             <Text className="text-2xl font-bold mb-2">
               Verify Email
@@ -118,7 +130,7 @@ export default function SignUpScreen() {
         className="flex-1"
       >
         <ScrollView 
-        className="my-24 font-sans-regular"
+        className="flex-1 mt-40 font-sans-regular"
         contentContainerStyle={{ padding: 24 }}>
           <Text className="text-2xl font-bold mb-6">
             Create Account
@@ -127,7 +139,13 @@ export default function SignUpScreen() {
           {error && (
             <Text className="text-destructive mb-4">{error}</Text>
           )}
-
+ <TextInput 
+          placeholder="Username"
+            className="border p-4 rounded-xl mb-3"
+            value={username}
+            onChangeText={setusername}
+            autoCapitalize="none"
+ />
           <TextInput
             placeholder="Email"
             className="border p-4 rounded-xl mb-3"

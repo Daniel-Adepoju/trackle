@@ -11,6 +11,7 @@ import dayjs from "dayjs"
 import { styled } from "nativewind"
 import { useState } from "react"
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native"
+import { usePostHog } from "posthog-react-native"
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context"
 
 const SafeAreaView = styled(RNSafeAreaView)
@@ -18,6 +19,7 @@ const SafeAreaView = styled(RNSafeAreaView)
 export default function App() {
   const [expandedId, setExpandedId] = useState<string | null>("")
   const { user } = useUser()
+  const posthog = usePostHog()
 
   return (
     <SafeAreaView className="flex-1 items-center bg-background p-5">
@@ -30,25 +32,28 @@ export default function App() {
         ListHeaderComponent={() => (
           <>
             {/* Header */}
-            <View className="self-center w-[90%] h-24 mt-4 flex-row items-center gap-4  mb-2">
+            <View className="self-center w-[90%] h-24 mt-4 flex-row items-center gap-2  mb-2">
               {user?.imageUrl ? (
                 <Image
                   source={{ uri: user.imageUrl }}
-                  style={{ width: 60, height: 60 }}
+                  style={{ width: 40, height: 40 }}
                   className="rounded-full"
                 />
               ) : (
                 <Image
                   source={require("@/assets/images/avatar.png")}
-                  style={{ width: 60, height: 60 }}
+                  style={{ width: 40, height: 40 }}
                   className="rounded-full"
                 />
               )}
-              <Text className="text-xl font-sans-bold">
+              <Text className="text-lg font-sans-bold">
                 {user?.firstName || user?.username || "User"}
               </Text>
 
-              <TouchableOpacity className="flex-row items-center gap-2 ml-auto rounded-full border-2 border-black/20 p-1">
+              <TouchableOpacity
+                className="flex-row items-center gap-2 ml-auto rounded-full border-2 border-black/20 p-1"
+                onPress={() => posthog.capture("add_subscription_tapped")}
+              >
                 <IconSymbol
                   name="add"
                   size={28}
@@ -108,7 +113,17 @@ export default function App() {
           <SubCard
             data={item}
             expanded={expandedId === item?.id}
-            onPress={() => setExpandedId(expandedId === item?.id ? null : item?.id)}
+            onPress={() => {
+              const isExpanding = expandedId !== item?.id
+              setExpandedId(isExpanding ? item?.id : null)
+              if (isExpanding) {
+                posthog.capture("subscription_expanded", {
+                  subscription_id: item?.id,
+                  subscription_name: item?.name,
+                  subscription_category: item?.category,
+                })
+              }
+            }}
           />
         )}
         keyExtractor={(item: any) => item.id}

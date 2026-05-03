@@ -3,11 +3,13 @@ import { useColorScheme } from "@/hooks/use-color-scheme"
 import { ClerkProvider } from "@clerk/expo"
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { useFonts } from "expo-font"
-import { SplashScreen, Stack } from "expo-router"
+import { SplashScreen, Stack, usePathname, useGlobalSearchParams } from "expo-router"
 import * as SecureStore from "expo-secure-store"
 import { StatusBar } from "expo-status-bar"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { tokenCache } from "@clerk/expo/token-cache"
+import { PostHogProvider } from "posthog-react-native"
+import { posthog } from "../src/config/posthog"
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -15,10 +17,10 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
-  if (!publishableKey) {
-    return null
-  }
   const colorScheme = useColorScheme()
+  const pathname = usePathname()
+  const params = useGlobalSearchParams()
+  const previousPathname = useRef<string | undefined>(undefined)
   const [fontsLoaded] = useFonts({
     "sans-regular": require("../assets/fonts/Lato-Regular.ttf"),
     "sans-medium": require("../assets/fonts/Lato-Regular.ttf"),
@@ -28,10 +30,21 @@ export default function RootLayout() {
   })
 
   useEffect(() => {
+    if (previousPathname.current !== pathname) {
+      posthog.screen(pathname, { previous_screen: previousPathname.current ?? null, ...params })
+      previousPathname.current = pathname
+    }
+  }, [pathname, params])
+
+  useEffect(() => {
     if (!fontsLoaded) {
       SplashScreen.hideAsync()
     }
   }, [fontsLoaded])
+
+  if (!publishableKey) {
+    return null
+  }
 
   if (!fontsLoaded) {
     return null
@@ -41,23 +54,38 @@ export default function RootLayout() {
       publishableKey={publishableKey}
       tokenCache={tokenCache}
     >
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen
-            name="(auth)"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="(tabs)"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: "modal", title: "Modal" }}
-          />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <PostHogProvider
+        client={posthog}
+        autocapture={{
+          captureScreens: false,
+          captureTouches: true,
+          propsToCapture: ["testID"],
+        }}
+      >
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen
+              name="(auth)"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="(tabs)"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="modal"
+              options={{ presentation: "modal", title: "Modal" }}
+            />
+
+            {/* <Stack.Screen
+              name="onboarding"
+              options={{ headerShown: false }}
+            /> */}
+          </Stack>
+
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </PostHogProvider>
     </ClerkProvider>
   )
 }

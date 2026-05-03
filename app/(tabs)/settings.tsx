@@ -5,6 +5,7 @@ import { router } from "expo-router"
 import { styled } from "nativewind"
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native"
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context"
+import { usePostHog } from "posthog-react-native"
 
 const SafeAreaView = styled(RNSafeAreaView)
 
@@ -60,9 +61,12 @@ const SettingItem = ({
 const Settings = () => {
   const { user } = useUser()
   const { signOut } = useAuth()
+  const posthog = usePostHog()
 
   const handleSignOut = async () => {
     try {
+      posthog.capture("sign_out_tapped")
+      posthog.reset()
       await signOut()
       router.replace("/(auth)/signin")
     } catch (error) {
@@ -124,7 +128,7 @@ const Settings = () => {
         </View>
 
         {/* Account Section */}
-        <View className="bg-card rounded-2xl mx-4 mb-4 overflow-hidden">
+        <View className="mt-0 bg-card rounded-2xl mx-4 mb-4 overflow-hidden">
           <Text
             className="text-xs font-semibold text-muted-foreground uppercase px-4 py-3"
             style={{ fontFamily: "sans-semibold" }}
@@ -151,11 +155,6 @@ const Settings = () => {
             title="Joined"
             value={createdAt}
           />
-          <SettingItem
-            icon="phone.fill"
-            title="Phone"
-            value={user?.primaryPhoneNumber?.phoneNumber || "Not set"}
-          />
         </View>
 
         {/* Profile Section */}
@@ -172,51 +171,22 @@ const Settings = () => {
             title="Edit Profile"
             onPress={() => {}}
           />
-          <SettingItem
-            icon="bell.fill"
-            title="Notifications"
-            onPress={() => {}}
-          />
-          <SettingItem
-            icon="lock.fill"
-            title="Security"
-            onPress={() => {}}
-          />
         </View>
 
         {/* App Section */}
-        <View className="bg-card rounded-2xl mx-4 mb-4 overflow-hidden">
+        <View className="mb-25 bg-card rounded-2xl mx-4 overflow-hidden">
           <Text
             className="text-xs font-semibold text-muted-foreground uppercase px-4 py-3"
             style={{ fontFamily: "sans-semibold" }}
           >
             App
           </Text>
-
-          <SettingItem
-            icon="questionmark.circle.fill"
-            title="Help & Support"
-            onPress={() => {}}
-          />
           <SettingItem
             icon="info.circle.fill"
             title="About"
             value="Version 1.0.0"
           />
         </View>
-
-        {/* Sign Out */}
-        <TouchableOpacity
-          className="bg-destructive/10 border border-destructive rounded-2xl mx-4 mb-8 py-4"
-          onPress={handleSignOut}
-        >
-          <Text
-            className="text-destructive text-center font-semibold"
-            style={{ fontFamily: "sans-semibold" }}
-          >
-            Sign Out
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   )
