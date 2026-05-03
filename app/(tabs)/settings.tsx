@@ -64,10 +64,11 @@ const Settings = () => {
   const posthog = usePostHog()
 
   const handleSignOut = async () => {
-    try {
+    try {  
+      await signOut()
       posthog.capture("sign_out_tapped")
       posthog.reset()
-      await signOut()
+    
       router.replace("/(auth)/signin")
     } catch (error) {
       console.error("Sign out error:", error)
