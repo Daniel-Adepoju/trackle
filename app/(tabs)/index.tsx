@@ -1,32 +1,47 @@
 import "@/global.css"
 
+import CreateSubscriptionModal from "@/components/CreateSubscriptionModal"
 import ListHeading from "@/components/ListHeading"
 import SubCard from "@/components/SubCard"
+import { useSubscriptions } from "@/components/SubscriptionsContext"
 import { IconSymbol } from "@/components/ui/icon-symbol"
 import UpcomingSubCard from "@/components/UpcomingSubCard"
-import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data"
+import { HOME_BALANCE, UPCOMING_SUBSCRIPTIONS } from "@/constants/data"
 import { formatCurrency } from "@/lib/utils"
 import { useUser } from "@clerk/expo"
 import dayjs from "dayjs"
 import { styled } from "nativewind"
-import { useState } from "react"
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native"
 import { usePostHog } from "posthog-react-native"
+import { useState } from "react"
+import { FlatList, Image, Pressable, Text, View } from "react-native"
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context"
 
 const SafeAreaView = styled(RNSafeAreaView)
 
 export default function App() {
   const [expandedId, setExpandedId] = useState<string | null>("")
+  const [modalVisible, setModalVisible] = useState(false)
+  const { subscriptions, addSubscription } = useSubscriptions()
   const { user } = useUser()
   const posthog = usePostHog()
 
+  const handleCreateSubscription = (newSubscription: any) => {
+    addSubscription(newSubscription)
+    posthog.capture("subscription_created", {
+      subscription_name: newSubscription.name,
+      subscription_category: newSubscription.category,
+      subscription_price: newSubscription.price,
+      subscription_frequency: newSubscription.billing,
+    })
+  }
+
   return (
     <SafeAreaView className="flex-1 items-center bg-background p-5">
-      {/* <ScrollView
-        className="w-full flex-1"
-        contentContainerStyle={{ alignItems: "center" }}
-      > */}
+      <CreateSubscriptionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleCreateSubscription}
+      />
 
       <FlatList
         ListHeaderComponent={() => (
@@ -50,16 +65,16 @@ export default function App() {
                 {user?.firstName || user?.username || "User"}
               </Text>
 
-              <TouchableOpacity
+              <Pressable
                 className="flex-row items-center gap-2 ml-auto rounded-full border-2 border-black/20 p-1"
-                onPress={() => posthog.capture("add_subscription_tapped")}
+                onPress={() => setModalVisible(true)}
               >
                 <IconSymbol
                   name="add"
                   size={28}
                   color="gray"
                 />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {/* Balance */}
@@ -102,7 +117,7 @@ export default function App() {
             <ListHeading title="All Subscriptions" />
           </>
         )}
-        data={HOME_SUBSCRIPTIONS}
+        data={subscriptions}
         style={{
           width: "100%",
           // marginInline: "auto",

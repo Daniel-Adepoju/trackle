@@ -89,7 +89,7 @@ export default function TabLayout() {
               title: tab.title,
               tabBarIcon: ({ color, focused }) => (
                 <View
-                  className={`rounded-full  ${focused ? "bg-[#8c1a9b]" : "bg-blend-color"} items-center justify-center w-12 h-12`}
+                  className={`rounded-full  ${focused ? "bg-[#550696]" : "bg-blend-color"} items-center justify-center w-12 h-12`}
                 >
                   <IconSymbol
                     size={24}

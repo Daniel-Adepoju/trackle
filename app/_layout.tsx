@@ -1,14 +1,14 @@
+import { SubscriptionsProvider } from "@/components/SubscriptionsContext"
 import "@/global.css"
 import { useColorScheme } from "@/hooks/use-color-scheme"
 import { ClerkProvider } from "@clerk/expo"
+import { tokenCache } from "@clerk/expo/token-cache"
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native"
 import { useFonts } from "expo-font"
-import { SplashScreen, Stack, usePathname, useGlobalSearchParams } from "expo-router"
-import * as SecureStore from "expo-secure-store"
+import { SplashScreen, Stack, useGlobalSearchParams, usePathname } from "expo-router"
 import { StatusBar } from "expo-status-bar"
-import { useEffect, useRef } from "react"
-import { tokenCache } from "@clerk/expo/token-cache"
 import { PostHogProvider } from "posthog-react-native"
+import { useEffect, useRef } from "react"
 import { posthog } from "../src/config/posthog"
 
 export const unstable_settings = {
@@ -62,29 +62,31 @@ export default function RootLayout() {
           propsToCapture: ["testID"],
         }}
       >
-        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen
-              name="(auth)"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="(tabs)"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="modal"
-              options={{ presentation: "modal", title: "Modal" }}
-            />
+        <SubscriptionsProvider>
+          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen
+                name="(auth)"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="(tabs)"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="modal"
+                options={{ presentation: "modal", title: "Modal" }}
+              />
 
-            {/* <Stack.Screen
-              name="onboarding"
-              options={{ headerShown: false }}
-            /> */}
-          </Stack>
+              {/* <Stack.Screen
+                name="onboarding"
+                options={{ headerShown: false }}
+              /> */}
+            </Stack>
 
-          <StatusBar style="auto" />
-        </ThemeProvider>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </SubscriptionsProvider>
       </PostHogProvider>
     </ClerkProvider>
   )
